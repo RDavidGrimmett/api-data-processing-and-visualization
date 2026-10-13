@@ -4,7 +4,7 @@
 import requests
 import json
 
-# Get biological data from Ensembl.org
+# Find Ensembl ID from mygene.info
 def get_ensembl_id():
 
     # Target url and search parameters
@@ -34,7 +34,7 @@ def get_ensembl_id():
         print("Request failed:", response.status_code)
         print(response.text)
 
-
+# Get database from Ensembl.org
 def get_database(ensembl_id):
     headers = {
         "Content-type": "application/json"
@@ -47,7 +47,7 @@ def get_database(ensembl_id):
         params={"expand": 1},
         headers=headers,
     )
-
+    # if commection fail print error code
     if lookup_response.status_code != 200:
         print("Request failed:", lookup_response.status_code)
         print(lookup_response.text)
@@ -55,98 +55,30 @@ def get_database(ensembl_id):
 
     data = lookup_response.json()
 
-    # Get the genomic DNA sequence for the gene.
-    sequence_url = f"https://rest.ensembl.org/sequence/id/{ensembl_id}"
-    sequence_response = requests.get(
-        sequence_url,
-        params={"type": "genomic"},
-        headers=headers,
-    )
+    return data
 
-    if sequence_response.status_code != 200:
-        print("Request failed:", sequence_response.status_code)
-        print(sequence_response.text)
-        return
-
-    data["sequence"] = sequence_response.json()["seq"]
-
+# Write data to data.json
+def create_file(data):
     with open("data.json", "w") as file:
         json.dump(data, file, indent=2)
 
-    return data
+#  Reads data.json
+def load_data():
+    with open ("data.json") as f:
+        data = json.load(f)
 
-
-def get_gc_content(gene_name, sequence):
-    if not sequence:
-        raise ValueError(f"Cannot calculate GC-content for empty sequence: {gene_name}")
-
-    sequence = sequence.upper()
-    gc_count = sequence.count("G") + sequence.count("C")
-    return (gc_count / len(sequence)) * 100
-
-
-def get_sequence_length(sequence):
-    return len(sequence)
-
-
-def get_exon_intron_counts(gene_data):
-    transcript_counts = []
-
-    for transcript in gene_data.get("Transcript", []):
-        exons = transcript.get("Exon", [])
-        strand = transcript.get("strand", 1)
-
-        if all("rank" in exon for exon in exons):
-            transcript_exons = sorted(exons, key=lambda exon: exon["rank"])
-        else:
-            transcript_exons = sorted(
-                exons,
-                key=lambda exon: exon["start"],
-                reverse=(strand == -1),
-            )
-
-        genomic_exons = sorted(exons, key=lambda exon: exon["start"])
-        introns = []
-        for left_exon, right_exon in zip(genomic_exons, genomic_exons[1:]):
-            intron_start = left_exon["end"] + 1
-            intron_end = right_exon["start"] - 1
-            if intron_start <= intron_end:
-                introns.append({"start": intron_start, "end": intron_end})
-
-        transcript_counts.append({
-            "transcript_id": transcript["id"],
-            "exon_count": len(transcript_exons),
-            "exons": [
-                {
-                    "id": exon["id"],
-                    "start": exon["start"],
-                    "end": exon["end"],
-                    "rank": exon.get("rank"),
-                }
-                for exon in transcript_exons
-            ],
-            "intron_count": len(introns),
-            "introns": introns,
-        })
-
-    return transcript_counts
+# Captures exon lengths
+def get_exon_length():
+    exon_lengths = []
+    for transcript in data.get("Transctipt", []):
+        for exon in transcript.get("Exon", []):
+            length = exon["end"] - exon["start"]
+            exon_lengths.append(length)
 
 
 # Runs functions in sequential order
 if __name__ == "__main__":
 
     ensembl_id = get_ensembl_id()
-    if ensembl_id is not None:
-        gene_data = get_database(ensembl_id)
-        if gene_data is not None:
-            sequence = gene_data["sequence"]
-            gc_content = get_gc_content(ensembl_id, sequence)
-            sequence_length = get_sequence_length(sequence)
-            print(f"GC-content for {ensembl_id}: {gc_content:.2f}%")
-            print(f"Sequence length for {ensembl_id}: {sequence_length} bp")
-            for counts in get_exon_intron_counts(gene_data):
-                print(
-                    f"{counts['transcript_id']}: "
-                    f"{counts['exon_count']} exons, "
-                    f"{counts['intron_count']} introns"
-                )
+    data = get_database(ensembl_id)
+    file =  create_file(data)

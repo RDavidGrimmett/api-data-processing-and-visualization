@@ -7,11 +7,15 @@ Analyze a real-world biological dataset with Python and libraries like pandas, N
 1. Navigate to the directory containing final_analysis.py
 
 2. Run the following command:
-**python3 final_analysis.py**
+    > snakemake
 
 ## Included Files
 * final_analysis.py
+* analysis_report.md
+    * figure1.png
+    * figure2.png
 * README.md
+
 
 ## Output Files
 * data.json
