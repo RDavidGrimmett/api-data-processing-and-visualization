@@ -3,6 +3,9 @@
 # Imported libraries
 import requests
 import json
+import matplotlib.pyplot as plt
+import seaborn as sns
+
 
 # Find Ensembl ID from mygene.info
 def get_ensembl_id():
@@ -64,7 +67,7 @@ def create_file(data):
     
 
 #  Reads data.json
-def load_data(data):
+def load_data():
     with open ("data.json") as f:
         data = json.load(f)
     return data
@@ -87,7 +90,15 @@ def get_transcript_length(data):
     return transcript_lengths
 
 
-
+# Captures intron lengths
+def get_intron_length(data):
+    intron_lengths = []
+    for transcript in data.get("Transcript", []):
+        exons = transcript.get("Exon", [])
+        for i in range(len(exons) - 1):
+            intron_length = exons[i + 1]["start"] - exons[i]["end"]
+            intron_lengths.append(intron_length)
+    return intron_lengths
 
 
 # Runs functions in sequential order
