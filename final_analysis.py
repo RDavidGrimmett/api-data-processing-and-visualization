@@ -5,6 +5,7 @@ import requests
 import json
 import matplotlib.pyplot as plt
 import seaborn as sns
+import pandas as pd
 
 
 # Find Ensembl ID from mygene.info
@@ -37,6 +38,7 @@ def get_ensembl_id():
         print("Request failed:", response.status_code)
         print(response.text)
 
+
 # Get database from Ensembl.org
 def get_database(ensembl_id):
     headers = {
@@ -60,17 +62,19 @@ def get_database(ensembl_id):
 
     return data
 
+
 # Write data to data.json
 def create_file(data):
     with open("data.json", "w") as file:
         json.dump(data, file, indent=2)
     
 
-#  Reads data.json
+# Reads data.json
 def load_data():
     with open ("data.json") as f:
         data = json.load(f)
     return data
+
 
 # Captures exon lengths
 def get_exon_length(data):
@@ -80,6 +84,7 @@ def get_exon_length(data):
             length = exon["end"] - exon["start"]
             exon_lengths.append(length)
     return exon_lengths
+
 
 # Captures transcript lengths
 def get_transcript_length(data):
@@ -101,9 +106,55 @@ def get_intron_length(data):
     return intron_lengths
 
 
+# Plots the distribution of exon lengths
+def plot_exon_distribution(data):
+    exon_lengths = get_exon_length(data)
+    
+    plt.figure(figsize=(8, 6))
+    sns.set_theme(style="whitegrid")
+    
+    sns.histplot(exon_lengths, bins=30, kde=True, color='blue')
+    plt.title("Distribution of Exon Lengths")
+    plt.xlabel("Length (bp)")
+    plt.ylabel("Count")
+    
+    plt.tight_layout()
+    plt.savefig("exon_length_distribution.png")
+    plt.show()
+
+
+# Plots the comparison between exon and intron lengths
+def plot_intron_exon_comparison(data):
+    exon_lengths = get_exon_length(data)
+    intron_lengths = get_intron_length(data)
+    
+    plt.figure(figsize=(8, 6))
+    sns.set_theme(style="whitegrid")
+    
+    df_exons = pd.DataFrame({'Length': exon_lengths, 'Type': 'Exon'})
+    df_introns = pd.DataFrame({'Length': intron_lengths, 'Type': 'Intron'})
+    df_combined = pd.concat([df_exons, df_introns])
+    
+    sns.boxplot(x='Type', y='Length', data=df_combined, palette='Set2')
+    plt.title("Comparison of Exon vs Intron Lengths")
+    plt.yscale('log')
+    plt.ylabel("Length (bp - Log Scale)")
+    plt.xlabel("Feature Type")
+    
+    plt.tight_layout()
+    plt.savefig("intron_exon_comparison.png")
+    plt.show()
+
+
 # Runs functions in sequential order
 if __name__ == "__main__":
 
     ensembl_id = get_ensembl_id()
     data = get_database(ensembl_id)
     file =  create_file(data)
+    exon_lengths = get_exon_length(data)
+    transcript_lengths = get_transcript_length(data)
+    intron_lengths = get_intron_length(data)
+
+    plot_exon_distribution(data)
+    plot_intron_exon_comparison(data)
