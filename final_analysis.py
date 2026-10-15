@@ -61,19 +61,33 @@ def get_database(ensembl_id):
 def create_file(data):
     with open("data.json", "w") as file:
         json.dump(data, file, indent=2)
+    
 
 #  Reads data.json
-def load_data():
+def load_data(data):
     with open ("data.json") as f:
         data = json.load(f)
+    return data
 
 # Captures exon lengths
-def get_exon_length():
+def get_exon_length(data):
     exon_lengths = []
-    for transcript in data.get("Transctipt", []):
+    for transcript in data.get("Transcript", []):
         for exon in transcript.get("Exon", []):
             length = exon["end"] - exon["start"]
             exon_lengths.append(length)
+    return exon_lengths
+
+# Captures transcript lengths
+def get_transcript_length(data):
+    transcript_lengths = []
+    for transcript in data.get("Transcript", []):
+        length = transcript["end"] - transcript["start"]
+        transcript_lengths.append(length)
+    return transcript_lengths
+
+
+
 
 
 # Runs functions in sequential order
