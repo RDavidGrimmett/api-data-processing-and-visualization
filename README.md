@@ -11,6 +11,7 @@ Analyze a real-world biological dataset with Python and libraries like pandas, N
 
 ## Included Files
 * final_analysis.py
+* Snakefile
 * analysis_report.md
     * figure1.png
     * figure2.png
