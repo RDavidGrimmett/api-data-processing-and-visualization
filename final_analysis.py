@@ -119,7 +119,7 @@ def plot_exon_distribution(data):
     plt.ylabel("Count")
     
     plt.tight_layout()
-    plt.savefig("exon_length_distribution.png")
+    plt.savefig("figure1.png")
     plt.show()
 
 
@@ -142,7 +142,7 @@ def plot_intron_exon_comparison(data):
     plt.xlabel("Feature Type")
     
     plt.tight_layout()
-    plt.savefig("intron_exon_comparison.png")
+    plt.savefig("figure2.png")
     plt.show()
 
 
