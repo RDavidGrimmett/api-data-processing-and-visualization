@@ -31,10 +31,10 @@ Which part of this final project did you find most interesting or rewarding? Whi
  > The most challenging part was figuring out what question to ask. I had an immense amount of data at my fingertips but struggled to figure what to pull from it.
 
 How did integrating scripting, API use, data handling, and visualization impact your understanding of bioinformatics research?
-> 
+> These projects have really opened my eyes to how bioinformatics research is done. I can see now how data can be interpreted from these online databases. It is also useful to note how creating reusable code allows us to answer questions about a wide range of different data sets, without having to rewrite scripts for each.
 
 How would you extend or improve your analysis further with more time or resources?
-> 
+> With more time, I would want to broaden the scope. Instead of just capturing one gene, I’d like to create a script that allows user input. The script would then search using that input and capture the data on that gene. This way, the script could be reused to answer the same question for any number of genes. 
 
 
 ## AI Use Disclosure
