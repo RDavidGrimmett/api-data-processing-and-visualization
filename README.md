@@ -27,7 +27,8 @@ Figure 2 compares the full gene span with exon coverage across all transcripts. 
 ## Reflection 
 
 Which part of this final project did you find most interesting or rewarding? Which was the most challenging?
-> 
+> Creating visuals from the data I extracted was definingly the most interesting part. There are a lot of variables that can be tweaked to get the look you want from the graphs. Playing around with this was a lot of fun and an invaluable skill.\
+ > The most challenging part was figuring out what question to ask. I had an immense amount of data at my fingertips but struggled to figure what to pull from it.
 
 How did integrating scripting, API use, data handling, and visualization impact your understanding of bioinformatics research?
 > 
