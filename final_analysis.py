@@ -5,7 +5,6 @@ import requests
 import json
 import matplotlib.pyplot as plt
 import seaborn as sns
-import pandas as pd
 
 
 # Find Ensembl ID from mygene.info
@@ -81,29 +80,46 @@ def get_exon_length(data):
     exon_lengths = []
     for transcript in data.get("Transcript", []):
         for exon in transcript.get("Exon", []):
-            length = exon["end"] - exon["start"]
-            exon_lengths.append(length)
+            start = exon.get("start")
+            end = exon.get("end")
+            if start is not None and end is not None:
+                exon_lengths.append(end - start + 1)
     return exon_lengths
 
 
-# Captures transcript lengths
-def get_transcript_length(data):
-    transcript_lengths = []
-    for transcript in data.get("Transcript", []):
-        length = transcript["end"] - transcript["start"]
-        transcript_lengths.append(length)
-    return transcript_lengths
+def get_gene_length(data):
+    return data["end"] - data["start"] + 1
 
 
-# Captures intron lengths
-def get_intron_length(data):
-    intron_lengths = []
+def get_exon_coverage_length(data):
+    gene_start = data["start"]
+    gene_end = data["end"]
+    if gene_start > gene_end:
+        raise ValueError("Gene start must not be greater than gene end.")
+
+    exon_intervals = []
     for transcript in data.get("Transcript", []):
-        exons = transcript.get("Exon", [])
-        for i in range(len(exons) - 1):
-            intron_length = exons[i + 1]["start"] - exons[i]["end"]
-            intron_lengths.append(intron_length)
-    return intron_lengths
+        for exon in transcript.get("Exon", []):
+            start = exon.get("start")
+            end = exon.get("end")
+            if start is None or end is None:
+                continue
+
+            start = max(start, gene_start)
+            end = min(end, gene_end)
+            if start <= end:
+                exon_intervals.append((start, end))
+
+    exon_intervals.sort()
+    merged_intervals = []
+    for start, end in exon_intervals:
+        if merged_intervals and start <= merged_intervals[-1][1] + 1:
+            previous_start, previous_end = merged_intervals[-1]
+            merged_intervals[-1] = (previous_start, max(previous_end, end))
+        else:
+            merged_intervals.append((start, end))
+
+    return sum(end - start + 1 for start, end in merged_intervals)
 
 
 # Plots the distribution of exon lengths
@@ -123,26 +139,36 @@ def plot_exon_distribution(data):
     plt.show()
 
 
-# Plots the comparison between exon and intron lengths
-def plot_intron_exon_comparison(data):
-    exon_lengths = get_exon_length(data)
-    intron_lengths = get_intron_length(data)
-    
-    plt.figure(figsize=(8, 6))
+# Plots unique exon coverage against the remaining gene span
+def plot_exon_gene_comparison(data):
+    gene_length = get_gene_length(data)
+    exon_coverage = get_exon_coverage_length(data)
+    other_length = gene_length - exon_coverage
+    exon_percentage = exon_coverage / gene_length * 100
+
+    plt.figure(figsize=(8, 5))
     sns.set_theme(style="whitegrid")
-    
-    df_exons = pd.DataFrame({'Length': exon_lengths, 'Type': 'Exon'})
-    df_introns = pd.DataFrame({'Length': intron_lengths, 'Type': 'Intron'})
-    df_combined = pd.concat([df_exons, df_introns])
-    
-    sns.boxplot(x='Type', y='Length', data=df_combined, palette='Set2')
-    plt.title("Comparison of Exon vs Intron Lengths")
-    plt.yscale('log')
-    plt.ylabel("Length (bp - Log Scale)")
-    plt.xlabel("Feature Type")
-    
+
+    plt.barh(
+        ["Gene Architecture"],
+        [exon_coverage],
+        color="#53a9b4",
+        label=f"Unique exon coverage ({exon_coverage:,} bp, {exon_percentage:.1f}%)",
+    )
+    plt.barh(
+        ["Gene Architecture"],
+        [other_length],
+        left=[exon_coverage],
+        color="#0051ff",
+        label=f"Not covered by exons ({other_length:,} bp)",
+    )
+    plt.xlim(0, gene_length)
+    plt.xlabel("Length in Base Pairs (bp)")
+    plt.title(f"Exon Coverage of Gene Span ({gene_length:,} bp)")
+    plt.legend(loc="upper right")
+
     plt.tight_layout()
-    plt.savefig("figure2.png")
+    plt.savefig("figure2.png", dpi=300)
     plt.show()
 
 
@@ -151,10 +177,7 @@ if __name__ == "__main__":
 
     ensembl_id = get_ensembl_id()
     data = get_database(ensembl_id)
-    file =  create_file(data)
-    exon_lengths = get_exon_length(data)
-    transcript_lengths = get_transcript_length(data)
-    intron_lengths = get_intron_length(data)
+    create_file(data)
 
     plot_exon_distribution(data)
-    plot_intron_exon_comparison(data)
+    plot_exon_gene_comparison(data)

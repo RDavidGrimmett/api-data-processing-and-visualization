@@ -1,0 +1,59 @@
+Assuming unrestricted shared filesystem usage.
+
+SNAKEMAKE
+=========
+  Date: 2026-10-19 14:47:07
+  Workflow ID: 5299753a-2ccb-41e7-a226-af4faefcb011
+  Platform: Linux-6.8.0-1064-azure-x86_64-with-glibc2.39
+  Host: codespaces-4bcddf
+  User: codespace
+  Snakemake version: 9.27.0
+  Python version: 3.14.2 (main, Sep 10 2026, 12:33:04) [GCC 13.3.0]
+  Command: /workspaces/api-data-processing-and-visualization/.venv/bin/snakemake --cores 2 -F
+  Snakefile: /workspaces/api-data-processing-and-visualization/Snakefile
+  Base directory: /workspaces/api-data-processing-and-visualization
+  Run directory: /workspaces/api-data-processing-and-visualization
+  Working directory: /workspaces/api-data-processing-and-visualization
+  Config file(s): []
+  Config MD5: 99914b932bd37a50b983c5e7c90ae93b
+
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cores: 2
+Rules claiming more threads will be scaled down.
+Job stats:
+job             count
+------------  -------
+run_analysis        1
+all                 1
+total               2
+
+Select jobs to execute...
+Execute 1 jobs...
+[Mon Oct 19 14:47:08 2026]
+localrule run_analysis:
+    input: final_analysis.py
+    output: data.json, figure1.png, figure2.png
+    jobid: 1
+    reason: Forced execution
+    resources: tmpdir=/tmp
+RuleException:
+CalledProcessError in file "/workspaces/api-data-processing-and-visualization/Snakefile", line 16:
+Command 'set -euo pipefail;  python final_analysis.py' returned non-zero exit status 1.
+[Mon Oct 19 14:47:16 2026]
+Error in rule run_analysis:
+    message: None
+    jobid: 1
+    input: final_analysis.py
+    output: data.json, figure1.png, figure2.png
+    shell:
+        python final_analysis.py
+        (command exited with non-zero exit code)
+Removing output files of failed job run_analysis since they might be corrupted:
+data.json
+Shutting down, this might take some time.
+Exiting because a job execution failed. Look above for error messages
+Complete log(s): /workspaces/api-data-processing-and-visualization/.snakemake/log/2026-10-19T144707.509664.snakemake.log
+Elapsed time: 0:00:09.004066
+WorkflowError:
+At least one job did not complete successfully.

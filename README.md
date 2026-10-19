@@ -13,14 +13,16 @@ Analyze a real-world biological dataset with Python and libraries like pandas, N
 * final_analysis.py
 * Snakefile
 * analysis_report.md
-    * figure1.png
-    * figure2.png
 * README.md
 
 
 ## Output Files
 * data.json
 * analysis_report.md
+* figure1.png
+* figure2.png
+
+Figure 2 compares the full gene span with exon coverage across all transcripts. Overlapping exon coordinates are merged and counted once; the remaining bases are labeled "Not covered by exons."
 
 ## Reflection 
 
