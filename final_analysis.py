@@ -55,7 +55,6 @@ def get_database(ensembl_id):
     if lookup_response.status_code != 200:
         print("Request failed:", lookup_response.status_code)
         print(lookup_response.text)
-        return
 
     data = lookup_response.json()
 
@@ -78,44 +77,44 @@ def load_data():
 # Captures exon lengths
 def get_exon_length(data):
     exon_lengths = []
+
+    # Loops through each transcript and exon to calculate exon lengths
     for transcript in data.get("Transcript", []):
         for exon in transcript.get("Exon", []):
             start = exon.get("start")
             end = exon.get("end")
-            if start is not None and end is not None:
-                exon_lengths.append(end - start + 1)
+            exon_lengths.append(end - start + 1)
     return exon_lengths
 
-
+# Captures gene length
 def get_gene_length(data):
     return data["end"] - data["start"] + 1
 
-
-def get_exon_coverage_length(data):
+# Captures the total exon length
+def get_total_exon_length(data):
     gene_start = data["start"]
     gene_end = data["end"]
-    if gene_start > gene_end:
-        raise ValueError("Gene start must not be greater than gene end.")
-
     exon_intervals = []
+
+    # Loops through each transcript and exon to calculate unique exon coverage
     for transcript in data.get("Transcript", []):
         for exon in transcript.get("Exon", []):
             start = exon.get("start")
             end = exon.get("end")
-            if start is None or end is None:
-                continue
 
             start = max(start, gene_start)
             end = min(end, gene_end)
-            if start <= end:
-                exon_intervals.append((start, end))
+            exon_intervals.append((start, end))
 
     exon_intervals.sort()
     merged_intervals = []
+    # Merges overlapping intervals
     for start, end in exon_intervals:
+        # If the current interval overlaps with the previous one, merge them
         if merged_intervals and start <= merged_intervals[-1][1] + 1:
             previous_start, previous_end = merged_intervals[-1]
             merged_intervals[-1] = (previous_start, max(previous_end, end))
+        # If the current interval does not overlap, add it to the list
         else:
             merged_intervals.append((start, end))
 
@@ -138,34 +137,24 @@ def plot_exon_distribution(data):
     plt.savefig("figure1.png")
     plt.show()
 
-
-# Plots unique exon coverage against the remaining gene span
+# Plots exon coverage as a proportion of gene length
 def plot_exon_gene_comparison(data):
     gene_length = get_gene_length(data)
-    exon_coverage = get_exon_coverage_length(data)
+    exon_coverage = get_total_exon_length(data)
     other_length = gene_length - exon_coverage
-    exon_percentage = exon_coverage / gene_length * 100
 
     plt.figure(figsize=(8, 5))
-    sns.set_theme(style="whitegrid")
-
-    plt.barh(
-        ["Gene Architecture"],
-        [exon_coverage],
-        color="#53a9b4",
-        label=f"Unique exon coverage ({exon_coverage:,} bp, {exon_percentage:.1f}%)",
+    plt.pie(
+        [exon_coverage, other_length],
+        labels=[
+            f"Exon coverage ({exon_coverage:,} bp)",
+            f"Not covered by exons ({other_length:,} bp)",
+        ],
+        autopct="%1.1f%%",
+        colors=["#496ad8", "#fa4f4f"],
+        startangle=90,
     )
-    plt.barh(
-        ["Gene Architecture"],
-        [other_length],
-        left=[exon_coverage],
-        color="#0051ff",
-        label=f"Not covered by exons ({other_length:,} bp)",
-    )
-    plt.xlim(0, gene_length)
-    plt.xlabel("Length in Base Pairs (bp)")
     plt.title(f"Exon Coverage of Gene Span ({gene_length:,} bp)")
-    plt.legend(loc="upper right")
 
     plt.tight_layout()
     plt.savefig("figure2.png", dpi=300)
