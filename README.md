@@ -7,7 +7,7 @@ Analyze a real-world biological dataset with Python and libraries like pandas, N
 1. Navigate to the directory containing final_analysis.py
 
 2. Run the following command:
-    > snakemake
+    > snakemake --cores 4
 
 ## Included Files
 * final_analysis.py
@@ -22,7 +22,6 @@ Analyze a real-world biological dataset with Python and libraries like pandas, N
 * figure1.png
 * figure2.png
 
-Figure 2 compares the full gene span with exon coverage across all transcripts. Overlapping exon coordinates are merged and counted once; the remaining bases are labeled "Not covered by exons."
 
 ## Reflection 
 
