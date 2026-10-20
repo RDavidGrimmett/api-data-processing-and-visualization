@@ -1,4 +1,3 @@
-#this is final_analysis.py
 
 # Imported libraries
 import requests
@@ -143,7 +142,7 @@ def plot_exon_gene_comparison(data):
     exon_coverage = get_total_exon_length(data)
     other_length = gene_length - exon_coverage
 
-    plt.figure(figsize=(8, 5))
+    plt.figure(figsize=(8, 6))
     plt.pie(
         [exon_coverage, other_length],
         labels=[
