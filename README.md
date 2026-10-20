@@ -1,13 +1,14 @@
 # api-data-processing-and-visualization
-Analyze a real-world biological dataset with Python and libraries like pandas, NumPy, and matplotlib to explore, analyze, and visualize biological data.
+This project is designed to analyze the human TP53 gene biological dataset using Python to explore, analyze, and visualize biological data.
 
 
 ## How-To-Run
 *An active internet connection is required to connect the remote databases.*
-1. Navigate to the directory containing final_analysis.py
+1. Navigate to the directory containing final_analysis.py and Snakefile
 
 2. Run the following command:
     > snakemake --cores 4
+
 
 ## Included Files
 * final_analysis.py
@@ -18,7 +19,6 @@ Analyze a real-world biological dataset with Python and libraries like pandas, N
 
 ## Output Files
 * data.json
-* analysis_report.md
 * figure1.png
 * figure2.png
 

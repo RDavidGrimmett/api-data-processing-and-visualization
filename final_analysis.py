@@ -42,7 +42,7 @@ def get_database(ensembl_id):
         "Content-type": "application/json"
     }
 
-    # Get the gene annotation, including transcripts and their exon records.
+    # Get the gene data from Ensembl using the Ensembl ID
     lookup_url = f"https://rest.ensembl.org/lookup/id/{ensembl_id}"
     lookup_response = requests.get(
         lookup_url,
@@ -65,14 +65,6 @@ def create_file(data):
         json.dump(data, file, indent=2)
     
 
-# Reads data.json
-def load_data():
-    with open ("data.json") as f:
-        data = json.load(f)
-
-    return data
-
-
 # Captures exon lengths
 def get_exon_length(data):
     exon_lengths = []
@@ -80,33 +72,36 @@ def get_exon_length(data):
     # Loops through each transcript and exon to calculate exon lengths
     for transcript in data.get("Transcript", []):
         for exon in transcript.get("Exon", []):
+
+            # Captures start and end positions of each exon
             start = exon.get("start")
             end = exon.get("end")
+
+            # Calculates the length of each exon and appends it to the list
             exon_lengths.append(end - start + 1)
 
     return exon_lengths
 
 
-# Captures gene length
+# Captures the gene length
 def get_gene_length(data):
-    return data["end"] - data["start"] + 1
+    gene_length = data["end"] - data["start"] + 1
+    
+    return gene_length
 
 
 # Captures the total exon length
 def get_total_exon_length(data):
-    gene_start = data["start"]
-    gene_end = data["end"]
     exon_intervals = []
 
     # Loops through each transcript and exon to calculate unique exon coverage
     for transcript in data.get("Transcript", []):
         for exon in transcript.get("Exon", []):
+
+            # Captures start and end positions of each exon
             start = exon.get("start")
             end = exon.get("end")
 
-            # Ensures that the exon intervals are within the gene boundaries
-            start = max(start, gene_start)
-            end = min(end, gene_end)
             exon_intervals.append((start, end))
 
     # Sorts the exon intervals by their start positions
@@ -125,7 +120,9 @@ def get_total_exon_length(data):
         else:
             merged_intervals.append((start, end))
 
-    return sum(end - start + 1 for start, end in merged_intervals)
+    total_exon_length = sum(end - start + 1 for start, end in merged_intervals)
+    
+    return total_exon_length
 
 
 # Plots the distribution of exon lengths
@@ -136,11 +133,11 @@ def plot_exon_distribution(data):
     plt.figure(figsize=(8, 6))
     sns.set_theme(style="whitegrid")
 
-    sns.histplot(exon_lengths, bins=30, kde=True, color='blue')
+    sns.histplot(exon_lengths, bins=30, color='blue')
     plt.title("Distribution of Exon Lengths")
     plt.xlabel("Length (bp)")
     plt.ylabel("Count")
-
+    
     # Adjusts layout and saves the figure
     plt.tight_layout()
     plt.savefig("figure1.png")
@@ -154,7 +151,7 @@ def plot_exon_gene_comparison(data):
     other_length = gene_length - exon_coverage
 
     # Creates a pie chart to visualize exon coverage vs. non-exon coverage
-    plt.figure(figsize=(8, 6))
+    plt.figure(figsize=(11, 9))
     plt.pie(
         [exon_coverage, other_length],
         labels=[
@@ -163,7 +160,7 @@ def plot_exon_gene_comparison(data):
         ],
         # Sets the autopct parameter to display percentages
         autopct="%1.1f%%",
-        colors=["#496ad8", "#fa4f4f"],
+        colors=["#dbc754", "#fa4f4f"],
         startangle=90,
     )
     plt.title(f"Exon Coverage of Gene Span ({gene_length:,} bp)")
