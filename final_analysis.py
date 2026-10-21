@@ -66,7 +66,7 @@ def create_file(data):
     
 
 # Captures exon lengths
-def get_exon_length(data):
+def get_exon_lengths(data):
     exon_lengths = []
 
     # Loops through each transcript and exon to calculate exon lengths
@@ -90,44 +90,46 @@ def get_gene_length(data):
     return gene_length
 
 
-# Captures the total exon length
-def get_total_exon_length(data):
+# Captures merged exon intervals across all transcripts
+def get_merged_exon_intervals(data):
     exon_intervals = []
 
-    # Loops through each transcript and exon to calculate unique exon coverage
+    # Loops through each transcript and exon to capture start and end positions
     for transcript in data.get("Transcript", []):
         for exon in transcript.get("Exon", []):
 
-            # Captures start and end positions of each exon
+            # Captures start and end positions of each exon and appends them to the exon_intervals list
             start = exon.get("start")
             end = exon.get("end")
-
             exon_intervals.append((start, end))
 
-    # Sorts the exon intervals by their start positions
+    # Sorts the exon intervals and merges overlapping intervals
     exon_intervals.sort()
     merged_intervals = []
 
-    # Merges overlapping intervals
+    # Loops through the sorted exon intervals to merge overlapping intervals
     for start, end in exon_intervals:
 
-        # If the current interval overlaps with the previous one, merge them
+        # If the merged_intervals list is not empty and the current interval overlaps with the last merged interval, merge them
         if merged_intervals and start <= merged_intervals[-1][1] + 1:
             previous_start, previous_end = merged_intervals[-1]
             merged_intervals[-1] = (previous_start, max(previous_end, end))
 
-        # If the current interval does not overlap, add it to the list
         else:
+            # If there is no overlap, adds the current interval to the merged intervals
             merged_intervals.append((start, end))
 
+    return merged_intervals
+
+
+# Captures the total exon length
+def get_total_exon_length(merged_intervals):
     total_exon_length = sum(end - start + 1 for start, end in merged_intervals)
-    
     return total_exon_length
 
 
 # Plots the distribution of exon lengths
-def plot_exon_distribution(data):
-    exon_lengths = get_exon_length(data)
+def plot_exon_distribution(exon_lengths):
 
     # Creates a histogram of exon lengths using seaborn
     plt.figure(figsize=(8, 6))
@@ -144,30 +146,43 @@ def plot_exon_distribution(data):
     plt.show()
 
 
-# Plots exon coverage as a proportion of gene length
-def plot_exon_gene_comparison(data):
-    gene_length = get_gene_length(data)
-    exon_coverage = get_total_exon_length(data)
-    other_length = gene_length - exon_coverage
+# Plots exon regions in genomic order across the gene span
+def plot_exon_gene_comparison(data, gene_length, merged_intervals, total_exon_length):
+    gene_start = data["start"]
 
-    # Creates a pie chart to visualize exon coverage vs. non-exon coverage
-    plt.figure(figsize=(11, 9))
-    plt.pie(
-        [exon_coverage, other_length],
-        labels=[
-            f"Exon coverage ({exon_coverage:,} bp)",
-            f"Not covered by exons ({other_length:,} bp)",
-        ],
-        # Sets the autopct parameter to display percentages
-        autopct="%1.1f%%",
-        colors=["#dbc754", "#fa4f4f"],
-        startangle=90,
+    exon_regions = [
+        (start - gene_start, end - start + 1)
+        for start, end in merged_intervals
+    ]
+
+    fig, ax = plt.subplots(figsize=(10, 3))
+    ax.broken_barh(
+        [(0, gene_length)],
+        (0.35, 0.3),
+        facecolors="#E5E7EB",
+        label="Non-exon gene span",
     )
-    plt.title(f"Exon Coverage of Gene Span ({gene_length:,} bp)")
+    ax.broken_barh(
+        exon_regions,
+        (0.35, 0.3),
+        facecolors="#4C78A8",
+        label="Exon regions",
+    )
+    ax.set_xlim(0, gene_length)
+    ax.set_ylim(0, 1)
+    ax.set_yticks([])
+    ax.set_xlabel("Position within gene (bp)")
+    ax.set_title(
+        f"Exon Regions In Gene Span "
+        f"({total_exon_length / gene_length:.1%} covered)"
+    )
+    ax.grid(axis="x", color="#D1D5DB", linewidth=0.8)
+    ax.set_axisbelow(True)
+    ax.legend(frameon=False, loc="upper center", ncol=2)
 
     # Adjusts layout and saves the figure
-    plt.tight_layout()
-    plt.savefig("figure2.png", dpi=300)
+    fig.tight_layout()
+    fig.savefig("figure2.png", dpi=300)
     plt.show()
 
 
@@ -177,6 +192,8 @@ if __name__ == "__main__":
     ensembl_id = get_ensembl_id()
     data = get_database(ensembl_id)
     create_file(data)
-
-    plot_exon_distribution(data)
-    plot_exon_gene_comparison(data)
+    exon_lengths = get_exon_lengths(data)
+    plot_exon_distribution(exon_lengths)
+    merged_intervals = get_merged_exon_intervals(data)
+    total_exon_length = get_total_exon_length(merged_intervals)
+    plot_exon_gene_comparison(data, get_gene_length(data), merged_intervals, total_exon_length)
