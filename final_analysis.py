@@ -103,7 +103,7 @@ def get_merged_exon_intervals(data):
             end = exon.get("end")
             exon_intervals.append((start, end))
 
-    # Sorts the exon intervals and merges overlapping intervals
+    # Sorts the exon intervals
     exon_intervals.sort()
     merged_intervals = []
 
@@ -116,7 +116,8 @@ def get_merged_exon_intervals(data):
             merged_intervals[-1] = (previous_start, max(previous_end, end))
 
         else:
-            # If there is no overlap, adds the current interval to the merged intervals
+
+            # If there is no overlap, just add the current interval to the merged intervals
             merged_intervals.append((start, end))
 
     return merged_intervals
@@ -125,10 +126,11 @@ def get_merged_exon_intervals(data):
 # Captures the total exon length
 def get_total_exon_length(merged_intervals):
     total_exon_length = sum(end - start + 1 for start, end in merged_intervals)
+
     return total_exon_length
 
 
-# Plots the distribution of exon lengths
+# Figure1: Plots the distribution of exon lengths
 def plot_exon_distribution(exon_lengths):
 
     # Creates a histogram of exon lengths using seaborn
@@ -137,7 +139,7 @@ def plot_exon_distribution(exon_lengths):
 
     sns.histplot(exon_lengths, bins=30, color='blue')
     plt.title("Exon Length Distribution Across TP53 Transcript Variants")
-    plt.xlabel("Exon Length (bp)")
+    plt.xlabel("Exon length (bp)")
     plt.ylabel("Number of exon entries")
     
     # Adjusts layout and saves the figure
@@ -146,7 +148,7 @@ def plot_exon_distribution(exon_lengths):
     plt.show()
 
 
-# Plots exon regions in genomic order across the gene span
+# Figure2: Plots exon regions in genomic order across the gene span
 def plot_exon_gene_comparison(data, gene_length, merged_intervals, total_exon_length):
     gene_start = data["start"]
 
@@ -193,7 +195,7 @@ if __name__ == "__main__":
     data = get_database(ensembl_id)
     create_file(data)
     exon_lengths = get_exon_lengths(data)
-    plot_exon_distribution(exon_lengths)
     merged_intervals = get_merged_exon_intervals(data)
     total_exon_length = get_total_exon_length(merged_intervals)
+    plot_exon_distribution(exon_lengths)
     plot_exon_gene_comparison(data, get_gene_length(data), merged_intervals, total_exon_length)

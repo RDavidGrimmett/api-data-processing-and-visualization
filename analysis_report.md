@@ -14,7 +14,7 @@ This project automates the retrieval, processing, and visualization of genetic d
 
 
 ## Findings
-* The analysis of the exons across the gene span reveals a range of lengths. Most of the exons are clustered within a specific size range (<500 bp), with a few very long exons contributing to the overall structure.
+* The analysis of the exons across TP53 gene database reveals a range of lengths. Most of the exons are clustered within a specific size range (<500 bp), with a few very long exons contributing to the overall structure.
 
 * Using the exon start and stop points, the proportion of the total genomic span covered by exons was calculated. Figure 2 highlights that coding exons make up 31.2% of the total gene span compared to the non-coding intervals. This is important as it reveals that about a third of the genetic material is dedicated to protein formation. 
 
