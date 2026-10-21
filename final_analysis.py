@@ -136,9 +136,9 @@ def plot_exon_distribution(exon_lengths):
     sns.set_theme(style="whitegrid")
 
     sns.histplot(exon_lengths, bins=30, color='blue')
-    plt.title("Distribution of Exon Lengths")
-    plt.xlabel("Length (bp)")
-    plt.ylabel("Count")
+    plt.title("Exon Length Distribution Across TP53 Transcript Variants")
+    plt.xlabel("Exon Length (bp)")
+    plt.ylabel("Number of exon entries")
     
     # Adjusts layout and saves the figure
     plt.tight_layout()
